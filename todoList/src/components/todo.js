@@ -11,23 +11,41 @@ export default class Todo extends Component{
       this.setState({
         inEdit:true
       },()=>{
+        this.editInput.current.value = this.props.content
         this.editInput.current.focus()    // 更新换数据之后，自动让input获取焦点，
       })
     }
+    commitChange = ()=>{
+      let {current:input} = this.editInput
+      let content = input.value.trim()
+      let {id} = this.props
+      if(content) {
+        this.props.alterTodoContent(id,input.value)
+      } else{
+        this.props.deleteTodo(id)
+      }
+      input.value = ''
+    }
     quiteEdit = ()=>{
+      if(!this.state.inEdit) return
       this.setState({
         inEdit:false
       })
+      this.commitChange()
     }
     quiteByKey = (ev)=>{
-      if(ev.keyCode === 27){
+
+      if(ev.keyCode === 27 || ev.keyCode === 13){
         this.setState({
           inEdit:false
         })
       }
+      if(ev.keyCode === 13){
+        this.commitChange()
+      }
     }
     render(){
-        let {content,deleteTodo,id,ifCompleted,toggleTodo} = this.props;
+        let {content,deleteTodo,id,ifCompleted,toggleTodo,alterTodoContent} = this.props;
         let {inEdit} = this.state
         let className = inEdit? 'editing': ''
         className = ifCompleted? className + 'completed': className;

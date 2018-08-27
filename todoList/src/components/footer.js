@@ -1,34 +1,48 @@
 import React from 'react'
-export default function Footer (){
+export default function Footer (props){
+    let {
+      clearAllCompleted,
+      showClearBtn,
+      view,
+      changeView,
+      leftItem
+    } = props
     return (
     <footer className="footer">
         <span className="todo-count">
-          <strong> 8 </strong>
+          <strong>{leftItem}</strong>
           <span>item left</span>
         </span>
         <ul className="filters">
           <li>
             <a
-              className="selected"
+              className= { view === 'all'? "selected" : ''}
+              onClick={()=>changeView('all')
+            }
             >All</a>
           </li>
           <li>
             <a
-              className="selected"
+              className= {view === 'active'? "selected": ''}
+              onClick={()=>changeView('active')}
             >Active</a>
 
           </li>
           <li>
-            <a
+            <a className = { view === 'completed'? 'selected': ''}
+            onClick ={()=>changeView('completed')}
             >Completed</a>
 
           </li>
         </ul>
-        <button
-          className="clear-completed"
-        >
-          clear all completed
-        </button>
+        {showClearBtn && (
+            <button
+            onClick = {clearAllCompleted}
+              className="clear-completed"
+            >
+              clear all completed
+            </button>
+        )}
       </footer>
     )
 }

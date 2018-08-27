@@ -8,7 +8,8 @@ class TodoList extends Component{
   constructor(props){
       super(props);
       this.state = {
-        todoList: []
+        todoList: [],
+        view:'all'
       }
       this.todoInput = createRef()
   }
@@ -51,7 +52,6 @@ class TodoList extends Component{
     })
   }
   toggleAll = (ev)=>{
-    console.log(ev.target.checked)
     let {todoList} = this.state
     todoList = todoList.map(elt =>{
       elt.ifCompleted = ev.target.checked
@@ -61,11 +61,47 @@ class TodoList extends Component{
       todoList
     })
   }
+  alterTodoContent = (id,content)=>{
+    let {todoList} = this.state;
+    todoList = todoList.map(elt=>{
+      if(elt.id === id) elt.content = content
+      return elt
+    })
+    this.setState({
+      todoList
+    })
+  }
+  clearAllCompleted = ()=>{
+    let {todoList} = this.state;
+    todoList  = todoList.filter(elt=>{
+      return !elt.ifCompleted        // 如果ifCompleted为true
+    })
+    this.setState({
+      todoList
+    })
+  }
+  changeView = (view)=>{
+    this.setState({
+      view
+    })
+  }
   render(){
-    let {todoList} = this.state
+    let {todoList,view} = this.state
     let activeTodo = todoList.find(elt =>elt.ifCompleted === false)   // 全选，不全选，
-
-    let todos = todoList.map((elt)=>{
+    let hasSelect = todoList.find(elt =>elt.ifCompleted === true)
+    let leftItem = 0   // 记录有多少个未完成
+    let showTodoData = todoList.filter(elt=>{     // 在数据渲染前来判断，需要渲染哪些数据，全部|| 未完成 || 已完成
+      if(!elt.ifCompleted) leftItem++
+      switch(view){
+        case 'active':
+        return !elt.ifCompleted;
+        case 'completed':
+        return elt.ifCompleted;
+        default:
+          return elt
+      }
+    })
+    let todos = showTodoData.map((elt)=>{
       return (
         <Todo
           key={elt.id}
@@ -74,7 +110,8 @@ class TodoList extends Component{
             content:elt.content,
             deleteTodo:this.deleteTodo,
             ifCompleted:elt.ifCompleted,
-            toggleTodo:this.toggleTodo
+            toggleTodo:this.toggleTodo,
+            alterTodoContent: this.alterTodoContent
           }}
         />
       )
@@ -92,19 +129,33 @@ class TodoList extends Component{
             onKeyDown ={this.addTodo}
           />
         </header>
-
-        <section className="main">
-          {/* 全选按钮 */}
-          <input
-            type="checkbox"
-            className="toggle-all"
-            checked ={!activeTodo && todoList.length > 0}
-            onChange={this.toggleAll}
-          />
-          <ul className="todo-list">
-           {todos}
-          </ul>
-        </section>
+        {
+          todoList.length > 0 && (
+            <Fragment>
+              <section className="main">
+                {/* 全选按钮 */}
+                <input
+                  type="checkbox"
+                  className="toggle-all"
+                  checked ={!activeTodo && todoList.length > 0}
+                  onChange={this.toggleAll}
+                />
+                <ul className="todo-list">
+                {todos}
+                </ul>
+              </section>
+              <Footer
+                {...{
+                  clearAllCompleted:this.clearAllCompleted,
+                  showClearBtn: hasSelect && todoList.length > 0,
+                  view: view,
+                  changeView:this.changeView,
+                  leftItem
+                }}
+              ></Footer>
+            </Fragment>
+          )
+        }
 
 
 
