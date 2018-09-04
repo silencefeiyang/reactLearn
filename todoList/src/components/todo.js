@@ -45,7 +45,7 @@ export default class Todo extends Component{
       }
     }
     render(){
-        let {content,deleteTodo,id,ifCompleted,toggleTodo,alterTodoContent} = this.props;
+        let {content,deleteTodo,id,ifCompleted,toggleTodo} = this.props;
         let {inEdit} = this.state
         let className = inEdit? 'editing': ''
         className = ifCompleted? className + 'completed': className;
