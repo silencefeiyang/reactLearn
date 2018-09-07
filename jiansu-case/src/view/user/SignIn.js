@@ -3,12 +3,16 @@ import EntryPanel from 'components/user/Panel'
 
 let propsTypes = {
     signInAjax:PT.func,
-    signInMsg:PT.object
+    signInMsg:PT.object,
+    clearLoginMsg:PT.func
 }
 
 export default class SignIn extends React.Component{
     constructor(props){
         super(props)
+    }
+    componentWillUnmount(){
+        this.props.clearLoginMsg()
     }
     render(){
         let {signInAjax,signInMsg} = this.props

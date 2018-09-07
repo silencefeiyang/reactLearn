@@ -16,13 +16,15 @@ export default class Layout extends React.Component{
         }
         this.signInAjax = this.signInAjax.bind(this)
         this.signUpAjax = this.signUpAjax.bind(this)
+        this.clearLoginMsg = this.clearLoginMsg.bind(this)
+        this.initUserInfo = this.initUserInfo.bind(this)
     }
     signInAjax(resData){
         $.post(`${cfg.url}/login`,resData)
         .done(res=>{
             let { code,data} = res
             if(code === 0){
-
+                this.initUserInfo(res.data)
             } else {
                 this.setState({
                     signInMsg:res
@@ -37,21 +39,44 @@ export default class Layout extends React.Component{
             this.setState({
                 signUpMsg:res
             })
+            if(code === 0){
+                setTimeout(()=>{
+                    this.initUserInfo(res.data)
+                },1000)
+            }
+        })
+    }
+    initUserInfo(myInfo){
+        myInfo.avatar = cfg.url + myInfo.avatar
+        console.log(myInfo)
+        this.setState({
+            myInfo
+        })
+    }
+    clearLoginMsg(){
+        this.setState({
+            signInMsg: null,
+            signUpMsg: null
         })
     }
     render(){
-        let {signInAjax,signUpAjax} = this
-        let {signInMsg,signUpMsg} = this.state
+        let {signInAjax,signUpAjax,clearLoginMsg} = this
+        let {signInMsg,signUpMsg,myInfo} = this.state
         return (
             <div className={S.layout}>
-                <Nav/>
+                <Nav
+                {...{
+                    myInfo
+                }}
+                />
                 <Route exact path="/" component={Home}/>
                 <Route exact path="/sign_in" render = {
                     (props)=> (
                         <SignIn {
                             ...{
                                 signInAjax,
-                                signInMsg
+                                signInMsg,
+                                clearLoginMsg
                             }
                         }></SignIn>
                     )
@@ -61,7 +86,8 @@ export default class Layout extends React.Component{
                         <SignUp {
                             ...{
                                 signUpAjax,
-                                signUpMsg
+                                signUpMsg,
+                                clearLoginMsg
                             }
                         }></SignUp>
                     )

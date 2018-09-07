@@ -6,7 +6,8 @@ import cfg from 'config/config.json'
 export default function PreviewList(props){
 
     let {previews} = props;
-    previews = previews.slice(previews.length -10)
+    previews = previews.slice(0,3)
+    console.log(previews)
     previews = previews.map((elt, i)=>{
 
         let {
@@ -39,7 +40,7 @@ export default function PreviewList(props){
             </Preview>
         );
     });
-
+    console.log(previews)
     return (
         <div>
             {previews}
