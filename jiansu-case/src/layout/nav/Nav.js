@@ -3,10 +3,11 @@ import { Link, NavLink } from 'react-router-dom';
 import S from './style.scss';
 
 let propType = {
-    myInfo: PT.object
+    myInfo: PT.object,
+    logout:PT.func
 }
 export default function Nav(props) {
-    let { myInfo } = props
+    let { myInfo,logout } = props
     let userLink = null
     // console.log(myInfo.avator)
     if (myInfo) {
@@ -22,7 +23,11 @@ export default function Nav(props) {
                     alt=""
                 />
                 <div className={S.dropDown}>
-                    <p>注销</p>
+                    <p onClick={(ev)=>{
+                        ev.stopPropagation()
+                        ev.preventDefault()                       
+                        logout()
+                    }}>注销</p>
                 </div>
             </NavLink>
         )
