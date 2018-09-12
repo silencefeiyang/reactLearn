@@ -1,4 +1,5 @@
-import { Redux } from 'redux'
+import { Redux,applyMiddleware,combineReducers} from 'redux'
+import thunk from 'redux-thunk'
 import { createStore } from '../../node_modules/redux';
 let $addCounter = $('.counterBox .addCounter'),
     $counterPanel = $('.counterBox .counterPanel'),
@@ -6,22 +7,41 @@ let $addCounter = $('.counterBox .addCounter'),
     $maximum = $('.maximum .val'),
     $allCount = $('.allCount .val')
 
-let initState = []
+let initState = {
+    A: [],
+    B: []
+}
 
-function counter(state = [], action) {
-    let { type,id} = action
+function counter(state=[], action) {
+    let { type,id,panelName} = action
     switch (type) {
         case 'ADD_COUNTER':
-            return [...state, {
-                id: new Date().getTime(),
-                value: 0
-            }]
+            if(panelName === 'A'){
+                return Object.assign({},state,{A:[...state.A, {
+                    id: new Date().getTime(),
+                    value: 0
+                }]})
+            } else{
+                return Object.assign({},state,{B:[...state.B, {
+                    id: new Date().getTime(),
+                    value: 0
+                }]})
+            }
+            
         case 'INCREMENT':
-            return state.map(elt => {
-                if (elt.id === id) {
-                    elt.value++
-                }
-                return elt
+            return Object.assign({},{
+                A:state.A.map(elt=>{
+                    if(elt.id === id){
+                        elt.value ++
+                    }
+                    return elt
+                }),
+                B:state.B.map(elt=>{
+                    if(elt.id === id){
+                        elt.value ++
+                    }
+                    return elt
+                })
             })
         case 'DECREMENT':
             return state.map(elt => {
@@ -34,7 +54,18 @@ function counter(state = [], action) {
             return state;
     }
 }
-let store = createStore(counter)
+
+// function counters(state,action){
+//     return {
+//         counterA: counterA(state.counterA,action),
+//         counterB: counterB(state.counterB,action)
+//     }
+// }
+//  let counters = combineReducers({
+//     A:counterA,
+//     B:counterB
+// })
+let store = createStore(counter,initState,applyMiddleware(thunk))
 class Counter {
     constructor(store, {id,value}) {
         this.value = value;
@@ -63,42 +94,64 @@ class Counter {
 
     decrement() {
         if (this.value === 0) return
-        this.store.dispatch({ type: 'DECREMENT', id: this.id })
+        boundDecrement(this.id)
     }
     increment() {
-        this.store.dispatch({ type: 'INCREMENT', id: this.id })
+        boundIncrement(this.id)
     }
     addIfOdd() {
-        if (this.value % 2 === 0) return
-        this.store.dispatch({ type: 'ADDIFODD', id: this.id })
+        boundAddIfOdd(this.id, this.value)
     }
     asyncAdd() {
         setTimeout(() => {
             if (this.value % 2 === 0) return
-            this.store.dispatch({ type: 'ASYNCADD', id: this.id })
+            this.store.dispatch(increment(this.id))
         }, 1000)
 
     }
 }
-$addCounter.click(ev => {
-    store.dispatch({ type: 'ADD_COUNTER' })
+const boundIncrement = (id) => store.dispatch(increment(id))
+const boundDecrement = (id) => store.dispatch(decrement(id))
+const boundAddIfOdd = (id,value)=> store.dispatch(addIfOdd(id,value))
+function increment(id){                // action创建函数      
+    return {type:'INCREMENT',id}
+}
+function decrement(id){
+    return {type:'DECREMENT',id}
+}
+function addIfOdd(id,value){
+    return function(dispatch,getState){    // 中间件帮我们传入的两个参数，store中的dispatch，
+        if (value % 2 === 0) return
+        // dispatch(increment(id))
+        boundIncrement(id)
+    }
+}
+$($addCounter[0]).click(ev => {
+    store.dispatch({ type: 'ADD_COUNTER' ,panelName:'A'})
+})
+$($addCounter[1]).click(ev => {
+    store.dispatch({ type: 'ADD_COUNTER',panelName:'B' })
 })
 store.subscribe(() => {
     let state = store.getState();
     $counterPanel.html('')
-
-    state.forEach(data => {    
-        $counterPanel.append(new Counter(store,data).elt)
+    initPanel(state.A,0)
+    initPanel(state.B,1)
+})
+function initPanel(state,num){
+    if(state.length === 0) return
+    state.forEach(data => {   
+        $($counterPanel[num]).append(new Counter(store,data).elt)
     })
-    $hasAll.html(state.every(elt=> elt.value !== 0)+'')
-    $maximum.html(state.slice().sort((a,b)=>{
+
+    $($hasAll[num]).html(state.every(elt=> elt.value !== 0)+'')
+    $($maximum[num]).html(state.slice().sort((a,b)=>{
         return b.value - a.value
      })[0].value)
-     $allCount.html(state.reduce((accu,elt)=>{
+     $($allCount[num]).html(state.reduce((accu,elt)=>{
         return accu +elt.value
     },0))
-})
-
+}
 function syncState(counters){
     checkHasAll(counters)
     calcMax(counters)
