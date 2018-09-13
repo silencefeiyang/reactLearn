@@ -17,8 +17,9 @@ let config = Object.assign({}, dfConfig, {
             $: 'jquery',
             React: 'react',
             ReactDOM: 'react-dom',
+            Component: ['react', 'Component'],
             PT: 'prop-types'
-        }),
+        })
         // new OpenBrowser({url: `http://localhost:${9000}`})
     ],
 

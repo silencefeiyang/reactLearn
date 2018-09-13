@@ -7,53 +7,8 @@ let $addCounter = $('.counterBox .addCounter'),
     $maximum = $('.maximum .val'),
     $allCount = $('.allCount .val')
 
-let initState = {
-    A: [],
-    B: []
-}
 
-function counter(state=[], action) {
-    let { type,id,panelName} = action
-    switch (type) {
-        case 'ADD_COUNTER':
-            if(panelName === 'A'){
-                return Object.assign({},state,{A:[...state.A, {
-                    id: new Date().getTime(),
-                    value: 0
-                }]})
-            } else{
-                return Object.assign({},state,{B:[...state.B, {
-                    id: new Date().getTime(),
-                    value: 0
-                }]})
-            }
-            
-        case 'INCREMENT':
-            return Object.assign({},{
-                A:state.A.map(elt=>{
-                    if(elt.id === id){
-                        elt.value ++
-                    }
-                    return elt
-                }),
-                B:state.B.map(elt=>{
-                    if(elt.id === id){
-                        elt.value ++
-                    }
-                    return elt
-                })
-            })
-        case 'DECREMENT':
-            return state.map(elt => {
-                if (elt.id === id) {
-                    elt.value--
-                }
-                return elt
-            })
-        default:
-            return state;
-    }
-}
+
 
 // function counters(state,action){
 //     return {
@@ -119,12 +74,14 @@ function increment(id){                // action创建函数
 function decrement(id){
     return {type:'DECREMENT',id}
 }
-function addIfOdd(id,value){
-    return function(dispatch,getState){    // 中间件帮我们传入的两个参数，store中的dispatch，
-        if (value % 2 === 0) return
-        // dispatch(increment(id))
+const addIfOdd = (id,value) => (dispatch,getState) =>{
+    if(value %2 === 0) return;
+    boundIncrement(id)
+}
+const asyncAdd = id => ()=>{
+    setTimeout(()=>{
         boundIncrement(id)
-    }
+    },1000)
 }
 $($addCounter[0]).click(ev => {
     store.dispatch({ type: 'ADD_COUNTER' ,panelName:'A'})
